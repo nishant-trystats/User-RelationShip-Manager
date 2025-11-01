@@ -1,16 +1,19 @@
 import { Request, Response, NextFunction } from "express";
-
+import {calculatePopularity} from '../utils/nodes'
+import Services from '../services/nodes'
 import {
   createUser,
   getAllUsers,
   updateUser,
   deleteUser,
+  getUserById,
 } from "../models/nodes";
 
 import {
   deleteRelation,
   createRelation,
   getAllRelations,
+  relationExists,
 } from "../models/relations";
 
 interface goodResponse<T = unknown> {
@@ -52,11 +55,11 @@ function responseHandler(
   return res.status(response.status).json(response);
 }
 
-function errResonseHandler(res: Response, error: unknown): Response {
+function errResonseHandler(res: Response, error: any|unknown): Response {
   return responseHandler(res, {
     message: error instanceof Error ? error.message : "Internal Server Error",
     status: 500,
-    data: null,
+    data: error?.data||null,
     success: false,
     errors: true,
   });
@@ -67,10 +70,11 @@ export class nodesController {
 
   public async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const response = await getAllUsers();
+      const response = await Services.getAllUsers();
       responseHandler(res, { message: "all users data", data: response });
     } catch (err) {
       errResonseHandler(res, err);
+      next(err);
     }
   }
 
@@ -78,31 +82,68 @@ export class nodesController {
   public async createUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { user } = req.body;
-      const response = await createUser(user);
+      const response = await Services.createUser(user);
       if (!response) throw new Error("Controllers Create user Database Error");
       responseHandler(res, { message: " user created", data: response });
     } catch (err) {
       errResonseHandler(res, err);
+      next(err);
     }
   }
 
-  //update user
-  public async updateUser(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const { data } = req.body;
-      const response = await updateUser(id, data);
-      if (!response) throw new Error("Controllers UpdateUser database error");
-      responseHandler(res, { message: `updated  user `, data: response });
-    } catch (err) {
-      errResonseHandler(res, err);
+//update user
+public async updateUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const { data } = req.body;
+
+    // Fetch existing user from DB
+    const existingUser = await getUserById(id);
+    if (!existingUser) {
+      throw new Error("User not found for update");
     }
+
+    // Merge old + new data to get updated state
+    const updatedFields = {
+      ...existingUser.toObject(),
+      ...data,
+    };
+
+    // Recalculate popularity score
+    const newPopularity = calculatePopularity({
+      uniqueFriends: updatedFields.friends?.length || 0,
+      totalHobbies: updatedFields.hobbies?.length || 0,
+    });
+
+    // Update user including recalculated popularity
+    const response = await updateUser(id, {
+      ...data,
+      popularityScore: newPopularity,
+    });
+
+    if (!response) throw new Error("Controllers UpdateUser database error");
+
+    responseHandler(res, {
+      message: `User updated & popularity recalculated`,
+      data: response,
+    });
+  } catch (err) {
+    errResonseHandler(res, err);
+    next(err);
   }
+}
+
 
   //delete user
   public async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
+      const existingRelations =await relationExists(id);
+      if(existingRelations){
+        const error = new Error(" Given Relations exists for the user");
+        (error as any).data = existingRelations;
+        throw error;
+      }
       const response = await deleteUser(id);
       if (!response) throw new Error("Controllers deleteUser database error");
       responseHandler(res, { message: `Removed user `, data: { response } });
@@ -116,7 +157,7 @@ export class nodesController {
     try {
       const { id } = req.params;
       const { fromId } = req.body;
-      const response = createRelation(fromId, id);
+      const response = await createRelation(fromId, id);
       if (!response)
         throw new Error("Controllers createRelation database error");
       responseHandler(res, { message: `created reation `, data: response });

@@ -1,13 +1,9 @@
-import './App.css'
-import Graph from './graph'
+import React from "react";
+import AppLayout from "./components/Layout/AppLayout";
+import "./App.css";
 
-function App() {
-  return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <h1>Graph under this</h1>
-      <Graph />
-    </div>
-  )
-}
+const App: React.FC = () => {
+  return <AppLayout />;
+};
 
-export default App
+export default App;

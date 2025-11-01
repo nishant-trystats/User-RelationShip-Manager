@@ -57,4 +57,16 @@ export const getAllRelations = async (): Promise<IRelation[]> => {
   return await Relation.find();
 };
 
+export const relationExists = async (userId: string): Promise<IRelation[] | false> => {
+  const relations = await Relation.find({
+    $or: [
+      { from: userId },
+      { to: userId }
+    ]
+  });
+
+  return relations.length > 0 ? relations : false;
+};
+
+
 export default Relation;

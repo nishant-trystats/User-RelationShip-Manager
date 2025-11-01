@@ -5,9 +5,11 @@ const app = express();
 import dotenv from 'dotenv';
 import connectToDatabase from './config/db';
 dotenv.config();
-
+import cors from "cors";
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
+
+app.use(cors({ origin: "*" }));
 
 app.use('/api/users',Noderoutes);
 app.use('/api/graph',Graphroutes);

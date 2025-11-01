@@ -35,7 +35,7 @@ function Flow() {
   );
 
   return (
-<div        style={{ width: '50%', height: '50%' , border:"solid black 5px"}} >
+<div  style={{ width: '50%', height: '50%' , border:"solid black 5px"}} >
 
     <ReactFlow
       nodes={nodes}
@@ -49,7 +49,7 @@ function Flow() {
       <Controls />
       <Background />
     </ReactFlow>
-<h1>good</h1>
+
 </div>
 );
 }
