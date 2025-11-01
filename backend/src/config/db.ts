@@ -9,7 +9,7 @@ const connectToDatabase = async (): Promise<void> => {
   }
 
   try {
-    await mongoose.connect(`mongodb://localhost:27017/${databaseName}`,{
+    await mongoose.connect(`${process.env.dburl}`,{
         autoIndex:false
     });
 
