@@ -40,7 +40,8 @@ const UserForm: React.FC = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:3000/api/users', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}`, {
+      // const response = await fetch('http://localhost:3000/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
