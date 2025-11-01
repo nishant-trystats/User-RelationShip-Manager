@@ -70,14 +70,21 @@ const mappedNodes = users.map((u: any, i: number) => {
   }, []);
 
   // Connect event → backend relation
-  const onConnect = useCallback(async (params: Connection) => {
-    try {
-      await api.linkUsers(params.target, params.source);
-      setEdges((eds) => addEdge(params, eds));
-    } catch (err) {
-      alert("Error creating relation");
-    }
-  }, [setEdges]);
+const onConnect = useCallback(async (params: Connection) => {
+  // ✅ Add a type guard
+  if (!params.source || !params.target) {
+    console.warn("Missing connection endpoints:", params);
+    return;
+  }
+
+  try {
+    await api.linkUsers(params.target, params.source);
+    setEdges((eds) => addEdge(params, eds));
+  } catch (err) {
+    alert("Error creating relation");
+  }
+}, [setEdges]);
+
 
   if (loading) return <div>Loading graph...</div>;
 
