@@ -1,6 +1,11 @@
 import React from "react";
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  refresh: boolean;
+  setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ refresh, setRefresh }) => {
   const hobbies = ["Reading", "Gaming", "Travel", "Music", "Cooking"];
 
   return (
@@ -20,6 +25,9 @@ const Sidebar: React.FC = () => {
             key={hobby}
             draggable
             onDragStart={(e) => e.dataTransfer.setData("hobby", hobby)}
+            onDragEnd={() => {
+              setTimeout(() => setRefresh(!refresh), 500);
+            }}
             style={{
               background: "#2a2a2a",
               marginBottom: "0.5rem",

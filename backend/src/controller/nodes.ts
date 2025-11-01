@@ -157,10 +157,14 @@ public async updateUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const { fromId } = req.body;
+      if(id==fromId){
+       return responseHandler(res,{message:'you cant create link to youself',errors:true,success:false,status:409})
+      }
+
       const response = await createRelation(fromId, id);
       if (!response)
         throw new Error("Controllers createRelation database error");
-      responseHandler(res, { message: `created reation `, data: response });
+     return responseHandler(res, { message: `created reation `, data: response });
     } catch (err) {
       errResonseHandler(res, err);
     }

@@ -9,7 +9,26 @@ import cors from "cors";
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
-app.use(cors({ origin: "*" }));
+const whitelist = [
+  'http://localhost:3000', // local dev
+  'http://localhost:5173', // local dev
+  'https://userrelatitonshitp.up.railway.app',
+];
+
+const corsOptions = {
+  origin: function (origin:string|undefined, callback:any) {
+    // Allow requests with no origin (like Postman, curl)
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS',],
+};
+
+app.use(cors(corsOptions));
 
 app.use('/api/users',Noderoutes);
 app.use('/api/graph',Graphroutes);

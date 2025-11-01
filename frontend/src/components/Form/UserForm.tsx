@@ -3,7 +3,12 @@ import type { FormEvent } from "react";
 import type  { IUser } from "../../types";
 import { api } from "../../api/api";
 
-const UserForm: React.FC = () => {
+interface UserFormProps {
+  refresh: boolean;
+  setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const UserForm: React.FC<UserFormProps> = ({ refresh, setRefresh }) => {
   const [formData, setFormData] = useState<IUser>({
     username: "",
     age: 0,
@@ -35,6 +40,7 @@ const UserForm: React.FC = () => {
       await api.createUser(formData);
       alert("✅ User created!");
       setFormData({ username: "", age: 0, hobbies: [], friends: [] });
+      setRefresh(!refresh);
     } catch (err) {
       alert("❌ Error creating user");
       console.error(err);
@@ -49,6 +55,7 @@ const UserForm: React.FC = () => {
   try {
     await api.deleteUser(id);
     alert("User deleted");
+    setRefresh(!refresh);
   } catch (err) {
     alert("First remove all connection or relations.");
   }
@@ -81,6 +88,7 @@ const UserForm: React.FC = () => {
         placeholder="Age"
         min={0}
         value={formData.age}
+        onFocus={(e) => e.target.select()}
         onChange={handleChange}
       />
 

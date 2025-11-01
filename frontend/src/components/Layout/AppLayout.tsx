@@ -2,8 +2,11 @@ import React from "react";
 import Sidebar from "../Sidebar/Sidebar";
 import Graph from "../Graph/Graph";
 import UserForm from "../Form/UserForm";
+import { useState } from "react";
 
 const AppLayout: React.FC = () => {
+  const [refresh, setRefresh] = useState(true);
+
   return (
     <div
       style={{
@@ -15,11 +18,11 @@ const AppLayout: React.FC = () => {
       }}
     >
       {/* Sidebar (Hobbies/Filters) */}
-      <Sidebar />
+      <Sidebar setRefresh={setRefresh} refresh={refresh} />
 
       {/* Graph Area */}
       <div style={{ flex: 1, position: "relative" }}>
-        <Graph />
+        <Graph refresh={refresh} />
       </div>
 
       {/* Right Panel - Form */}
@@ -31,7 +34,7 @@ const AppLayout: React.FC = () => {
           padding: "1rem",
         }}
       >
-        <UserForm />
+        <UserForm refresh={refresh} setRefresh={setRefresh} />
       </div>
     </div>
   );

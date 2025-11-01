@@ -102,8 +102,30 @@ const NodeCustom: React.FC<NodeProps> = ({ data, id }) => {
         </div>
       )}
 
-      <Handle type="source" position={Position.Right} />
-      <Handle type="target" position={Position.Left} />
+      <Handle
+  type="source"
+  position={Position.Right}
+  style={{
+    width: 14,
+    height: 14,
+    background: "#fff",
+    border: "2px solid #646cff",
+    borderRadius: "50%",
+  }}
+/>
+
+<Handle
+  type="target"
+  position={Position.Left}
+  style={{
+    width: 14,
+    height: 14,
+    background: "#fff",
+    border: "2px solid #646cff",
+    borderRadius: "50%",
+  }}
+/>
+
     </div>
   );
 };

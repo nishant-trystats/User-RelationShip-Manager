@@ -3,11 +3,10 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   addEdge,
-
   Controls,
   Background,
 } from "reactflow";
-import type {  Connection} from "reactflow";
+import type {  Connection,Edge} from "reactflow";
 import "reactflow/dist/style.css";
 import NodeCustom from "./NodeCustom";
 import NodeLegend from "./NodeLegend";
@@ -15,7 +14,11 @@ import { api } from "../../api/api";
 
 const nodeTypes = { custom: NodeCustom };
 
-const Graph: React.FC = () => {
+interface GraphProps {
+  refresh: boolean; // or number/string depending on how you trigger it
+}
+
+const Graph: React.FC<GraphProps> = ({refresh}) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [loading, setLoading] = useState(true);
@@ -52,8 +55,8 @@ const mappedNodes = users.map((u: any, i: number) => {
 
       const mappedEdges = relations.map((r: any, i: number) => ({
         id: `e-${r.from}-${r.to}-${i}`,
-        source: r.from,
-        target: r.to,
+        source: r.to,
+        target: r.from,
       }));
 
       setNodes(mappedNodes);
@@ -67,7 +70,7 @@ const mappedNodes = users.map((u: any, i: number) => {
 
   useEffect(() => {
     fetchGraph();
-  }, []);
+  }, [refresh]);
 
   // Connect event → backend relation
 const onConnect = useCallback(async (params: Connection) => {
@@ -85,6 +88,27 @@ const onConnect = useCallback(async (params: Connection) => {
   }
 }, [setEdges]);
 
+//  When user clicks an edge → confirm delete relation
+const onEdgeClick = useCallback(
+  async (event: React.MouseEvent, edge: Edge) => {
+    event.stopPropagation();
+    const confirmDelete = window.confirm(
+      `Do you want to delete this relation?\nFrom: ${edge.source}\nTo: ${edge.target}`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await api.unlinkUsers(edge.source, edge.target); // DELETE request
+      setEdges((eds) => eds.filter((e) => e.id !== edge.id)); // remove from state
+      alert("Relation deleted successfully");
+    } catch (err) {
+      alert("Error deleting relation");
+      console.error(err);
+    }
+  },
+  [setEdges]
+);
+
 
   if (loading) return <div>Loading graph...</div>;
 
@@ -97,6 +121,7 @@ const onConnect = useCallback(async (params: Connection) => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        onEdgeClick={onEdgeClick}
         fitView
       >
         <Controls />
